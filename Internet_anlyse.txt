@@ -1,0 +1,418 @@
+
+リスト2.1
+
+import networkx as nx
+from google.colab import files
+uploaded = files.upload()
+for fn in uploaded.keys():
+  print('User uploaded file "{name}"with length {length} bytes'.format(name=fn, length=len(uploaded[fn])))
+  G=nx.readwrite.gml.read_gml(fn)
+  nx.draw_spring(G, node_size=200, node_color='red',with_labels=True)
+
+リスト2.2
+
+import networkx as nx
+import matplotlib.pyplot as plt
+from google.colab import files
+uploaded = files.upload()
+for fn in uploaded.keys():
+ print('User uploaded file"{name}"with length{length}bytes'.format(name=fn,length=len(uploaded[fn])))
+ G = nx.readwrite.gml.read_gml(fn)
+
+plt.subplot(231)
+nx.draw_circular(G, node_size=40, node_color='red',with_labels=False)
+plt.subplot(232)
+nx.draw_kamada_kawai(G, node_size=40, node_color='red',with_labels=False)
+plt.subplot(233)
+nx.draw_random(G, node_size=40, node_color='red',with_labels=False)
+plt.subplot(234)
+nx.draw_spectral(G, node_size=40, node_color='red',with_labels=False)
+
+リスト2.3
+import networkx as nx
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+def draw_h(G, pos, measures, measure_name):
+ nodes = nx.draw_networkx_nodes(G, pos, node_size=250,cmap=plt.cm.plasma,node_color=list(measures.values()),nodelist=list(measures.keys()))
+ nodes.set_norm(mcolors.SymLogNorm(linthresh=0.01,linscale=1))
+ # labels = nx.draw_networkx_labels(G, pos)
+ edges = nx.draw_networkx_edges(G, pos)
+ plt.title(measure_name)
+ plt.colorbar(nodes)
+ plt.axis('off')
+ plt.show()
+
+import numpy as np
+import numpy.linalg as LA
+from pprint import pprint
+from google.colab import files
+uploaded = files.upload()
+for fn in uploaded.keys():
+ print('User uploaded file "{name}"with length{length} bytes'.format(name=fn, length=len(uploaded[fn])))
+ G = nx.readwrite.gml.read_gml(fn)
+pos = nx.spring_layout(G)
+draw_h(G,pos,nx.degree_centrality(G),'Degree Centrality')
+draw_h(G,pos,nx.eigenvector_centrality(G),'Eigenvector Centrality')
+draw_h(G,pos,nx.closeness_centrality(G),'Closeness Centrality')
+draw_h(G,pos,nx.betweenness_centrality(G),'Betweenness Centrality')
+
+リスト2.5
+import networkx as nx
+import matplotlib.pyplot as plt
+
+def draw_m(G, pos):
+  nodes = nx.draw_networkx_nodes(G, pos, node_size=200)
+  labels = nx.draw_networkx_labels(G, pos)
+  edges = nx.draw_networkx_edges(G, pos)
+  plt.title(['density: {:.5}'.format(nx.density(G)), 'clustering coefficient: {:.5}'.format(nx.average_clustering(G))])
+  plt.axis('off')
+  plt.show()
+
+rnd = nx.gnp_random_graph(10,0.1)
+pos = nx.circular_layout(rnd)
+draw_m(rnd, pos)
+
+petersen = nx.petersen_graph()
+pos = nx.shell_layout(petersen, nlist=[range(5, 10), range(5)])
+draw_m(petersen, pos)
+
+cycle = nx.cycle_graph(10)
+pos = nx.spring_layout(cycle)
+draw_m(cycle, pos)
+
+リスト2.6
+import networkx as nx
+import matplotlib.pyplot as plt
+from google.colab import files
+from networkx.algorithms import community
+import pandas as pd
+
+uploaded = files.upload()
+for fn in uploaded.keys():
+ print('User uploaded file"{name}"with length{length}bytes'.format(name=fn, length=len(uploaded[fn])))
+ G = nx.readwrite.gml.read_gml(fn)
+
+carac = pd.DataFrame({ 'ID':G.nodes(), 'myvalue':[0]*len(G.nodes())})
+
+communities_generator = community.centrality.girvan_newman(G)
+top_level_communities = next(communities_generator)
+next_level_communities = next(communities_generator)
+for m in range(len(next_level_communities)):
+  for n in next_level_communities[m]:
+    carac.loc[carac.ID == n,'myvalue'] = m
+nx.draw_spring(G, node_color = carac['myvalue'],node_size=120,with_labels = True)
+
+
+リスト3.23
+import networkx as nx
+import matplotlib.pyplot as plt
+
+K_5 =nx.complete_graph(5)
+plt.subplot(131)
+nx.draw(K_5, node_size=400, node_color='red', with_labels=True, font_weight='bold')
+
+K_3_5=nx.complete_bipartite_graph(3, 5)
+plt.subplot(132)
+nx.draw(K_3_5,node_size=400,node_color='red',with_labels=True,font_weight='bold')
+plt.subplot(133)
+er = nx.erdos_renyi_graph(50,0.15)
+nx.draw(er,node_size=400,node_color='red',with_labels=True,font_weight='bold')
+
+print("CC of complete graph", nx.clustering(K_5,0))
+print("CC of bipartite graph", nx.clustering(K_3_5,0))
+print("CC of random graph", nx.clustering(er,0))
+
+リスト3.24
+
+import networkx as nx
+import matplotlib.pyplot as plt
+
+star = nx.star_graph(10)
+plt.subplot(131)
+nx.draw(star, node_size=400, node_color='red', with_labels=True, font_weight='bold')
+ba = nx.barabasi_albert_graph(10,3)
+plt.subplot(132)
+nx.draw(ba, node_size=400, node_color='red', with_labels=True, font_weight='bold')
+plt.subplot(133)
+bg = nx.barbell_graph(5,0)
+nx.draw(bg, node_size=400, node_color='red', with_labels=True, font_weight='bold')
+
+print("assortativity of star graph",'{:.3f}'.format(nx.degree_pearson_correlation_coefficient(star,0)))
+print("assortativity of Barabasi_albert_graph",'{:.3f}'.format(nx.degree_pearson_correlation_coefficient(ba,0)))
+print("assortativity of barbell graph",'{:.3f}'.format(nx.degree_pearson_correlation_coefficient(bg,0)))
+
+リスト7.1
+import networkx as nx
+import matplotlib.pyplot as plt
+
+er = nx.erdos_renyi_graph(100,0.1)
+plt.subplot(241)
+nx.draw(er,node_size=10,node_color='red')
+print(nx.info(er))
+plt.subplot(245)
+plt.plot(nx.degree_histogram(er))
+
+ba = nx.barabasi_albert_graph(100,3)
+plt.subplot(242)
+nx.draw(ba,node_size=10,node_color='red')
+print(nx.info(ba))
+plt.subplot(246)
+plt.plot(nx.degree_histogram(ba))
+
+K_100 = nx.complete_graph(100)
+plt.subplot(243)
+nx.draw(K_100,node_size=10,node_color='red')
+print(nx.info(K_100))
+plt.subplot(247)
+plt.plot(nx.degree_histogram(K_100))
+
+karate=nx.karate_club_graph()
+plt.subplot(244)
+nx.draw(karate, node_size=10,node_color='red')
+print(nx.info(karate))
+plt.subplot(248)
+plt.plot(nx.degree_histogram(karate))
+
+
+リスト7.1改良
+import networkx as nx
+import matplotlib.pyplot as plt
+
+from google.colab import files
+uploaded = files.upload()
+for fn in uploaded.keys():
+  print('User uploaded file "{name}"with length {length} bytes'.format(name=fn, length=len(uploaded[fn])))
+  G=nx.readwrite.gml.read_gml(fn)
+
+
+ba = nx.barabasi_albert_graph(15,3)
+plt.subplot(242)
+nx.draw(ba,node_size=10,node_color='red')
+print(nx.info(ba))
+plt.subplot(246)
+plt.plot(nx.degree_histogram(ba))
+
+#次数分散10
+K_100 = nx.complete_graph(15)
+plt.subplot(243)
+nx.draw(K_100,node_size=10,node_color='red')
+print(nx.info(K_100))
+plt.subplot(247)
+plt.plot(nx.degree_histogram(K_100))
+
+#実グラフ
+plt.subplot(244)
+nx.draw(G, node_size=10,node_color='red')
+print(nx.info(G))
+plt.subplot(248)
+plt.plot(nx.degree_histogram(G))
+
+
+リスト8.1
+import networkx as nx
+import matplotlib.pyplot as plt
+
+G = nx.karate_club_graph()
+plt.figure(figsize=(5,5))
+nx.draw_spring(G,node_size=400, node_color="red",with_labels=True,font_weight='bold')
+x = 4
+y = 5
+print("vertex pair:", x,"and",y)
+print("neighbors of", x,":", list(G.neighbors(x)))
+print("neighbors of", y,":", list(G.neighbors(y)))
+print("degree of", x,":", G.degree(x))
+print("degree of", y,":", G.degree(x))
+print("common neighbosr:", len(list(nx.common_neighbors(G,x,y))))
+print("Jaccard coefficient:", list(nx.jaccard_coefficient(G,[(x,y)]))[0][2])
+print("Adamic/Adar:", list(nx.adamic_adar_index(G,[(x,y)]))[0][2])
+print("preferential attachment:", list(nx.preferential_attachment(G,[(x,y)]))[0][2])
+
+リスト8.1改良
+import networkx as nx
+import matplotlib.pyplot as plt
+
+from google.colab import files
+uploaded = files.upload()
+for fn in uploaded.keys():
+ print('User uploaded file"{name}"with length{length}bytes'.format(name=fn,length=len(uploaded[fn])))
+ G = nx.readwrite.gml.read_gml(fn)
+
+plt.figure(figsize=(5,5))
+nx.draw_spring(G,node_size=400, node_color="red",with_labels=True,font_weight='bold')
+x = 'iPhone'
+y = 'Android'
+print("vertex pair:", x,"and",y)
+print("neighbors of", x,":", list(G.neighbors(x)))
+print("neighbors of", y,":", list(G.neighbors(y)))
+print("degree of", x,":", G.degree(x))
+print("degree of", y,":", G.degree(x))
+print("common neighbosr:", len(list(nx.common_neighbors(G,x,y))))
+print("Jaccard coefficient:", list(nx.jaccard_coefficient(G,[(x,y)]))[0][2])
+print("Adamic/Adar:", list(nx.adamic_adar_index(G,[(x,y)]))[0][2])
+print("preferential attachment:", list(nx.preferential_attachment(G,[(x,y)]))[0][2])
+
+リスト8.2
+import networkx as nx
+import matplotlib.pyplot as plt
+
+CN = []
+JC = []
+AA = []
+PA = []
+
+k=10
+G=nx.karate_club_graph()
+plt.figure(figsize=(5,5))
+nx.draw_spring(G, node_size=400, node_color="red",with_labels=True,font_weight='bold')
+n = nx.number_of_nodes(G)
+for x in range(n):
+  for y in range(x+1,n):
+    if not(G.has_edge(x,y)):
+      CN.append(tuple([x,y,len(list(nx.common_neighbors(G,x,y)))]))
+      JC.append(list(nx.jaccard_coefficient(G,[(x,y)]))[0])
+      AA.append(list(nx.adamic_adar_index(G,[(x,y)]))[0])
+      PA.append(list(nx.preferential_attachment(G,[(x,y)]))[0])
+
+print("common neighbors")
+print(sorted(CN,key=lambda x:x[2],reverse=True)[:k])
+print("Jaccard coefficient")
+print(sorted(JC,key=lambda x:x[2],reverse=True)[:k])
+print("Adamic/Adar")
+print(sorted(AA, key=lambda x:x[2], reverse= True)[:k])
+print("preferential attachment")
+print(sorted(PA,key=lambda x:x[2], reverse=True)[:k])
+
+リスト8.2 改良
+import networkx as nx
+import matplotlib.pyplot as plt
+
+from google.colab import files
+uploaded = files.upload()
+for fn in uploaded.keys():
+ print('User uploaded file"{name}"with length{length}bytes'.format(name=fn,length=len(uploaded[fn])))
+
+G = nx.read_edgelist(fn, nodetype=int)
+
+
+CN = []
+JC = []
+AA = []
+PA = []
+
+k=10
+# G=nx.karate_club_graph()
+plt.figure(figsize=(5,5))
+nx.draw_spring(G, node_size=400, node_color="red",with_labels=True,font_weight='bold')
+
+n = 16
+for x in range(n):
+  for y in range(x+1,n):
+    if not(G.has_edge(x,y)):
+      CN.append(tuple([x,y,len(list(nx.common_neighbors(G,x,y)))]))
+      JC.append(list(nx.jaccard_coefficient(G,[(x,y)]))[0])
+      AA.append(list(nx.adamic_adar_index(G,[(x,y)]))[0])
+      PA.append(list(nx.preferential_attachment(G,[(x,y)]))[0])
+
+print("common neighbors")
+print(sorted(CN,key=lambda x:x[2],reverse=True)[:k])
+print("Jaccard coefficient")
+print(sorted(JC,key=lambda x:x[2],reverse=True)[:k])
+print("Adamic/Adar")
+print(sorted(AA, key=lambda x:x[2], reverse= True)[:k])
+print("preferential attachment")
+print(sorted(PA,key=lambda x:x[2], reverse=True)[:k])
+
+ リスト8.3
+import networkx as nx
+import matplotlib.pyplot as plt
+import random
+from gensim.models import Word2Vec as word2vec
+
+def make_random_walks(G, num_of_walk, length_of_walk):
+  walks = list()
+  for i in range(num_of_walk):
+    node_list = list(G.nodes())
+    for node in node_list:
+      current_node = node
+      walk = list()
+      walk.append(str(node))
+      for j in range(length_of_walk):
+        next_node = random.choice(list(G.neighbors(current_node)))
+        walk.append(str(next_node))
+        current_node = node
+      walks.append(walk)
+  return walks
+
+
+G = nx.karate_club_graph()
+walks=make_random_walks(G,100,20)
+model=word2vec(walks,min_count=0,size=2,window=5,workers=1)
+
+
+x = list()
+y = list()
+node_list = list()
+colors = list()
+fig,ax=plt.subplots()
+for node in G.nodes():
+  vector = model.wv[str(node)]
+  x.append(vector[0])
+  y.append(vector[1])
+  ax.annotate(str(node), (vector[0],vector[1]))
+  if G.nodes[node]["club"]=="Officer":
+    colors.append("r")
+  else:
+    colors.append("b")
+for i in range(len(x)):
+  ax.scatter(x[i],y[i],c=colors[i])
+plt.show()
+
+リスト8.3 改良
+import networkx as nx
+import matplotlib.pyplot as plt
+import random
+from gensim.models import Word2Vec as word2vec
+
+def make_random_walks(G, num_of_walk, length_of_walk):
+  walks = list()
+  for i in range(num_of_walk):
+    node_list = list(G.nodes())
+    for node in node_list:
+      current_node = node
+      walk = list()
+      walk.append(str(node))
+      for j in range(length_of_walk):
+        next_node = random.choice(list(G.neighbors(current_node)))
+        walk.append(str(next_node))
+        current_node = node
+      walks.append(walk)
+  return walks
+
+from google.colab import files
+uploaded = files.upload()
+for fn in uploaded.keys():
+ print('User uploaded file"{name}"with length{length}bytes'.format(name=fn,length=len(uploaded[fn])))
+ G = nx.readwrite.gml.read_gml(fn)
+
+walks=make_random_walks(G,100,20)
+model=word2vec(walks,min_count=0,size=2,window=5,workers=1)
+
+
+x = list()
+y = list()
+node_list = list()
+colors = list()
+fig,ax=plt.subplots()
+for node in G.nodes():
+  vector = model.wv[str(node)]
+  x.append(vector[0])
+  y.append(vector[1])
+  ax.annotate(str(node), (vector[0],vector[1]))
+  if G.nodes[node]=="Officer":
+    colors.append("r")
+  else:
+    colors.append("b")
+for i in range(len(x)):
+  ax.scatter(x[i],y[i],c=colors[i])
+plt.show()
